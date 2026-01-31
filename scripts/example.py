@@ -2,7 +2,7 @@ import argparse
 
 import pandas as pd
 from functions import diff_features
-from interp_embed.saes import GoodfireSAE
+from interp_embed.sae import GoodfireSAE
 
 from interp_embed import Dataset
 
