@@ -39,7 +39,7 @@ class LocalSAE(BaseSAE):
 
     @property
     def name(self):
-        return f"{self.sae_id}_{self.release}"
+        return f"{self.release}_{self.sae_id}"
 
     def metadata(self):
         parent_metadata = super().metadata()
