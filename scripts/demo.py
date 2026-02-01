@@ -1,14 +1,13 @@
 import argparse
-from argparse import Namespace
-
 import logging
+from argparse import Namespace
+from pathlib import Path
 
 import pandas as pd
-from examples.functions import diff_features
 
+from examples.functions import diff_features
 from interp_embed import Dataset
 from interp_embed.sae import LocalSAE
-from pathlib import Path
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -20,7 +19,7 @@ logging.basicConfig(
 
 def main(args: Namespace):
     logging.debug(f"Loading SAE: {args.sae_id=}, Release: {args.release=}")
-    
+
     # 1. Load a SAE supported through the SAELens package
     sae = LocalSAE(
         sae_id=args.sae_id,
@@ -57,7 +56,7 @@ def main(args: Namespace):
 
     freq = diff_features(dataset1, dataset2)
     print(freq.head())
-    
+
     out_path = Path("/projects/bcqc/mgee2/interp-embed/results") / "demo.csv"
     freq.to_csv(out_path, index=False)
     logging.info(f"Results saved to {out_path}")
