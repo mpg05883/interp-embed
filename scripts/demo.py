@@ -6,8 +6,8 @@ from pathlib import Path
 import pandas as pd
 
 from examples.functions import diff_features
-from interp_embed import Dataset
-from interp_embed.sae import LocalSAE
+from src.interp_embed import Dataset
+from src.interp_embed.sae import LocalSAE
 
 logging.basicConfig(
     level=logging.DEBUG,
