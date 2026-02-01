@@ -1,16 +1,30 @@
 import argparse
+from argparse import Namespace
+
+import logging
 
 import pandas as pd
-from functions import diff_features
-from interp_embed.sae import GoodfireSAE
+from examples.functions import diff_features
 
 from interp_embed import Dataset
+from interp_embed.sae import LocalSAE
+from pathlib import Path
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="[%(asctime)s] %(message)s",
+    datefmt="%b %d, %Y %I:%M:%S%p",
+    force=True,
+)
 
 
-def main(args: argparse.Namespace):
-    # 1. Load a Goodfire SAE or SAE supported through the SAELens package
-    sae = GoodfireSAE(
-        variant_name=args.variant_name,
+def main(args: Namespace):
+    logging.debug(f"Loading SAE: {args.sae_id=}, Release: {args.release=}")
+    
+    # 1. Load a SAE supported through the SAELens package
+    sae = LocalSAE(
+        sae_id=args.sae_id,
+        release=args.release,
         device="cuda:0",  # optional
     )
 
@@ -43,15 +57,23 @@ def main(args: argparse.Namespace):
 
     freq = diff_features(dataset1, dataset2)
     print(freq.head())
+    
+    out_path = Path("/projects/bcqc/mgee2/interp-embed/results") / "demo.csv"
+    freq.to_csv(out_path, index=False)
+    logging.info(f"Results saved to {out_path}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--variant_name",
+        "--sae_id",
         type=str,
-        default="Llama-3.1-8B-Instruct-SAE-l19",
-        # or "Llama-3.3-70B-Instruct-SAE-l50" for higher quality features
+        default="blocks.8.hook_resid_pre",
+    )
+    parser.add_argument(
+        "--release",
+        type=str,
+        default="gpt2-small-res-jb",
     )
     args = parser.parse_args()
     main(args)
