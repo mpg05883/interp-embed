@@ -20,26 +20,26 @@ def main(args: Namespace):
     client = load_openai_client()
     dataset = load_dataset(args.dataset, "main", split=args.split)
     df = dataset.to_pandas()
-    
-    filepath = build_embeddings_path(
+
+    output_path = build_embeddings_path(
         dataset=args.dataset,
         split=args.split,
         field=args.field,
         model=args.model,
     )
-    
-    if filepath.exists(): 
-        with filepath.open("rb") as f:
+
+    if output_path.exists():
+        with output_path.open("rb") as f:
             data = pickle.load(f)["data"]
-        
+
         if len(data) == len(dataset):
             logging.info(
                 f"All {len(dataset)} embeddings for dataset: {args.dataset}, "
                 f"split: {args.split}, field: {args.field} have already been "
-                f"computed with model: {args.model} and saved to {filepath}\n "
+                f"computed with model: {args.model} and saved to {output_path}\n "
                 f"Ending now..."
             )
-            return 
+            return
 
     logging.info(
         f"Computing embeddings for dataset: {args.dataset}, split: {args.split}, "
@@ -67,9 +67,9 @@ def main(args: Namespace):
         ],
     }
 
-    with open(filepath, "wb") as f:
+    with open(output_path, "wb") as f:
         pickle.dump(output, f)
-    logging.info(f"Saved embeddings for {len(embeddings)} texts to {filepath}")
+    logging.info(f"Saved embeddings for {len(embeddings)} texts to {output_path}")
 
 
 if __name__ == "__main__":

@@ -32,7 +32,7 @@ def compute_embeddings(
         texts = texts.tolist()
 
     embeddings = []
-    
+
     kwargs = {
         "total": len(texts),
         "desc": "Computing embeddings",

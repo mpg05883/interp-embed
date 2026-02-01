@@ -19,17 +19,12 @@ def build_embeddings_path(
     split: str,
     field: str,
     model: str,
-    file_name: str = "embeddings",
     extension: str = "pkl",
 ) -> Path:
     """Build the path to the embeddings file for a given dataset, split, field,
-    model, file name, and extension."""
+    model, and extension."""
     filepath = (
-        resolve_embeddings_dirpath(dataset)
-        / split
-        / field
-        / model
-        / f"{file_name}.{extension}"
+        resolve_embeddings_dirpath(dataset) / split / field / f"{model}.{extension}"
     )
     filepath.parent.mkdir(parents=True, exist_ok=True)
     return filepath
