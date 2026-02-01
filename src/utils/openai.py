@@ -32,21 +32,20 @@ def compute_embeddings(
         texts = texts.tolist()
 
     embeddings = []
-
+    
     kwargs = {
-        "desc": "Computing embeddings",
         "total": len(texts),
+        "desc": "Computing embeddings",
         "unit": "texts",
         "disable": not verbose,
     }
 
-    for i in tqdm(range(0, len(texts), batch_size), **kwargs):
-        batch = texts[i : i + batch_size]
-        response = client.embeddings.create(
-            model=model,
-            input=batch,
-        )
-        embeddings.extend([item.embedding for item in response.data])
+    with tqdm(**kwargs) as pbar:
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i : i + batch_size]
+            response = client.embeddings.create(model=model, input=batch)
+            embeddings.extend([item.embedding for item in response.data])
+            pbar.update(len(batch))
 
     assert len(embeddings) == len(texts)
     return embeddings

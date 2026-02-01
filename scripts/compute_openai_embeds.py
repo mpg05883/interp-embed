@@ -34,9 +34,10 @@ def main(args: Namespace):
         
         if len(data) == len(dataset):
             logging.info(
-                f"Embeddings for dataset: {args.dataset}, split: {args.split}, "
-                f"field: {args.field} have already been computed with "
-                f"model: {args.model} and saved to {filepath}\nEnding now..."
+                f"All {len(dataset)} embeddings for dataset: {args.dataset}, "
+                f"split: {args.split}, field: {args.field} have already been "
+                f"computed with model: {args.model} and saved to {filepath}\n "
+                f"Ending now..."
             )
             return 
 
