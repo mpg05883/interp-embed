@@ -38,7 +38,7 @@ def main(args: Namespace):
             logging.info(
                 f"All {num_rows} embeddings for dataset: {args.dataset}, split: "
                 f"{args.split}, field: {args.field} have already been computed "
-                f"with model: {sae.name} and saved to {output_path}\n Ending now..."
+                f"with SAE: {sae.name} and saved to {output_path}\n Ending now..."
             )
             return
 
@@ -52,7 +52,7 @@ def main(args: Namespace):
         field=args.field,
         save_path=output_path,
     )
-    dataset.save_to_file(save_path=output_path)
+    dataset.save_to_file(file_path=output_path)
     logging.info(f"Saved embeddings for {len(df)} texts to {output_path}")
 
 

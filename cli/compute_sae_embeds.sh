@@ -3,7 +3,7 @@ source ./cli/utils.sh
 activate_conda_env
 
 dataset="gsm8k"
-split="train"
+split="test"
 field="answer"
 sae_id="blocks.8.hook_resid_pre"
 release="gpt2-small-res-jb"
