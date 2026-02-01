@@ -9,7 +9,7 @@ from src.utils.openai import compute_embeddings, load_openai_client
 from src.utils.path import build_embeddings_path
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="[%(asctime)s] %(message)s",
     datefmt="%b %d, %Y %I:%M:%S%p",
     force=True,
@@ -56,7 +56,7 @@ def main(args: Namespace):
 
     with open(filepath, "wb") as f:
         pickle.dump(output, f)
-    logging.info(f"Saved embeddings to {filepath}")
+    logging.info(f"Saved embeddings for {len(embeddings)} texts to {filepath}")
 
 
 if __name__ == "__main__":
