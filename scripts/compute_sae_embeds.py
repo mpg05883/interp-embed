@@ -30,6 +30,8 @@ def main(args: Namespace):
 
     if output_path.exists():
         params = safe_load_pkl(output_path)
+        
+        # Count the number of successfully completed samples
         num_rows = sum(1 for row in params["rows"] if row is not None)
 
         if num_rows == len(df):
