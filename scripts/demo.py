@@ -57,7 +57,8 @@ def main(args: Namespace):
     freq = diff_features(dataset1, dataset2)
     print(freq.head())
 
-    out_path = Path("/projects/bcqc/mgee2/interp-embed/results") / "demo.csv"
+    out_path = Path("/projects/bcqc/mgee2/interp-embed/results/misc") / "demo.csv"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     freq.to_csv(out_path, index=False)
     logging.info(f"Results saved to {out_path}")
 

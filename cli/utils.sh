@@ -41,6 +41,7 @@ activate_conda_env() {
 # - `SLURM_JOB_NAME`: The name of the SLURM job.
 # - `SLURM_ARRAY_JOB_ID`: The array job ID, if applicable.
 get_done_dir() {
+    mkdir -p ./output/logs
     local base_dir="./output/logs/${SLURM_JOB_NAME}/done"
 
     if [[ -n "$SLURM_ARRAY_JOB_ID" ]]; then

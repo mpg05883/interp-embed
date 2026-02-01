@@ -15,7 +15,6 @@
 #SBATCH --mail-user=mpgee@usc.edu
 #SBATCH --mail-type=BEGIN,END,FAIL
 
-mkdir -p ./output/logs
 source ./cli/utils.sh
 activate_conda_env
 
