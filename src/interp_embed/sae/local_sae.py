@@ -21,6 +21,8 @@ from .utils import (
     try_to_load_feature_labels,
 )
 
+CONTEXT_WINDOW_LIMIT = 2048  # Context window limit used in the paper
+
 
 class LocalSAE(BaseSAE):
     def __init__(

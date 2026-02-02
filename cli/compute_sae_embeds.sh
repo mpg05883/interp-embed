@@ -21,10 +21,11 @@ activate_conda_env
 dataset="gsm8k"
 split="train"
 field="answer"
-sae_id="blocks.8.hook_resid_pre"
-release="gpt2-small-res-jb"
+release="gemma-scope-9b-pt-res-canonical"
+# sae_id="layer_20/width_131k/canonical"
+sae_id="layer_20/width_16k/canonical"
 
-log_info "Starting $(get_slurm_message), script: $(basename "$0"). Conda environment: $CONDA_DEFAULT_ENV"
+log_info "Starting $(get_slurm_message), script: $(basename "$0"), Conda environment: $CONDA_DEFAULT_ENV"
 if python -m scripts.compute_sae_embeds \
     --dataset ${dataset} \
     --split ${split} \
