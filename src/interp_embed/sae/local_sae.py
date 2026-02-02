@@ -119,6 +119,14 @@ class GoodfireSAE(BaseSAE):
         quantize=False,
         **kwargs,
     ):
+        """
+        Args:
+            variant_name: The name of the variant to use. NOTE: Goodfire only
+                supports SAEs trained on Llama models. See here for a list of
+                supported models: https://huggingface.co/goodfire/goodfire-sae-models
+            quantize: Whether to quantize the language model.
+            **kwargs: Additional arguments to pass to the base class.
+        """
         super().__init__(**kwargs)
         self.variant_name = variant_name
         self.quantize = quantize

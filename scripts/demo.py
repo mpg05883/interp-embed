@@ -7,7 +7,7 @@ import pandas as pd
 
 from examples.functions import diff_features
 from src.interp_embed import Dataset
-from src.interp_embed.sae import LocalSAE
+from src.interp_embed.sae import GoodfireSAE, LocalSAE
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -21,10 +21,15 @@ def main(args: Namespace):
     logging.debug(f"Loading SAE: {args.sae_id=}, Release: {args.release=}")
 
     # 1. Load a SAE supported through the SAELens package
-    sae = LocalSAE(
+    local_sae = LocalSAE(
         sae_id=args.sae_id,
         release=args.release,
         device="cuda:0",  # optional
+    )
+
+    sae = GoodfireSAE(
+        variant_name="Llama-3.1-8B-Instruct-SAE-l19",
+        device="cuda:0",
     )
 
     # 2. Prepare your data as a DataFrame
