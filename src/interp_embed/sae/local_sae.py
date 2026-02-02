@@ -39,7 +39,9 @@ class LocalSAE(BaseSAE):
 
     @property
     def name(self):
-        return f"{self.release}_{self.sae_id}"
+        cleaned_release = self.release.replace("/", "__")
+        cleaned_sae_id = self.sae_id.replace("/", "__")
+        return f"{cleaned_release}_{cleaned_sae_id}"
 
     def metadata(self):
         parent_metadata = super().metadata()
