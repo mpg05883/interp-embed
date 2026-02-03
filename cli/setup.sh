@@ -3,7 +3,7 @@
 source ./cli/utils.sh
 source /sw/external/python/anaconda3/etc/profile.d/conda.sh
 
-ENV_NAME="interp-embed-py311"
+ENV_NAME="interp-embed"
 
 # Create conda environment if it doesn't exist and activate it
 if conda env list | awk '{print $1}' | grep -qx "$ENV_NAME"; then
@@ -20,8 +20,3 @@ pip install -e .
 
 # Install lm-eval-harness with Hugging Face backend
 pip install lm_eval[hf]
-
-# Install Llama CLI
-pip install llama-stack
-
-

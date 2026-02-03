@@ -24,7 +24,7 @@ log_error() {
 
 # Activates a hard-coded conda enviornment.
 activate_conda_env() {
-    local CONDA_ENV_NAME="interp-embed-py311"
+    local CONDA_ENV_NAME="sae-embed"
     source /sw/external/python/anaconda3/etc/profile.d/conda.sh
     conda activate "$CONDA_ENV_NAME"
 }
@@ -47,6 +47,7 @@ redirect_caches() {
         "$SCRATCH_DIR/.cache"
 
     # Hugging Face
+    export HF_HOME="/u/$USER/.cache/huggingface"
     export HF_DIR="$SCRATCH_DIR/hf"
     export HUGGINGFACE_HUB_CACHE="$HF_DIR/hub"
     export HF_DATASETS_CACHE="$HF_DIR/datasets"
