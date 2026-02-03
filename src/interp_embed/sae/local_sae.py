@@ -75,14 +75,24 @@ class LocalSAE(BaseSAE):
     @ensure_loaded
     @torch.no_grad()
     def encode(self, texts):
-        assert len(texts) > 0, "There must be more than one text to encode."
+        assert len(texts) > 0, "There must be more t.han one text to encode."
         self.sae.eval()  # prevents error if we're expecting a dead neuron mask for who grads
+
+        # # Filter out texts that exceed the context window
+        # max_length = self.tokenizer.model_max_length or CONTEXT_WINDOW_LIMIT
+        # valid_texts = [text for text in texts if len(self.tokenizer.tokenize(text)) <= max_length]
+
+        # if len(valid_texts) < len(texts):
+        #     warnings.warn(f"{len(texts) - len(valid_texts)} texts were skipped because they exceed the context window of {max_length} tokens.")
 
         self.tokenizer.pad_token = self.tokenizer.eos_token
         tokens = self.tokenizer(
+            # valid_texts,
             texts,
-            padding="longest",  # pad to the longest sequence in the batch
-            truncation=self.truncate,  # TODO: if the number of tokens exceeds the context window, you should filter this out to avoid erring the rest of the batch
+            padding="longest",
+            # truncation=True,
+            truncation=self.truncate,
+            # max_length=max_length,
             return_tensors="pt",
         )
 
@@ -125,9 +135,9 @@ class GoodfireSAE(BaseSAE):
     ):
         """
         Args:
-            variant_name: The name of the variant to use. NOTE: Goodfire only
-                supports SAEs trained on Llama models. See here for a list of
-                supported models: https://huggingface.co/goodfire/goodfire-sae-models
+            variant_name: The name of the Goodfire SAE to use. NOTE: Goodfire 
+                only supports SAEs trained on Llama models. See here for a list 
+                of supported models: https://huggingface.co/goodfire/goodfire-sae-models
             quantize: Whether to quantize the language model.
             **kwargs: Additional arguments to pass to the base class.
         """

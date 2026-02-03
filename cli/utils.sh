@@ -25,7 +25,7 @@ log_error() {
 # Activates a hard-coded conda enviornment 
 activate_conda_env() {
     source /sw/external/python/anaconda3/etc/profile.d/conda.sh
-    conda activate sae-embed
+    conda activate interp-embed-py311
 }
 
 

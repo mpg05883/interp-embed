@@ -3,7 +3,8 @@ from setuptools import find_packages, setup
 setup(
     name="interp_embed",
     version="0.1.0",
-    packages=find_packages(),
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
     install_requires=[
         "goodfire==0.3.4",
         "python-dotenv==1.0.1",
