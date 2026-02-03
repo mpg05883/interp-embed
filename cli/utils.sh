@@ -8,26 +8,73 @@ get_timestamp() {
 }
 
 
-# Prints timestamped info messages to stdout
+# Logs timestamped info message to stdout.
 log_info() {
-    timestamp=$(get_timestamp)
-    echo "[${timestamp}] $*"
+    TIMESTAMP=$(get_timestamp)
+    echo "[${TIMESTAMP}] $*"
 }
 
 
-# Prints timestamped error messages to stderr.
+# Logs timestamped error message to stderr.
 log_error() {
-    timestamp=$(get_timestamp)
-    echo "[${timestamp}] $*" >&2
+    TIMESTAMP=$(get_timestamp)
+    echo "[${TIMESTAMP}] $*" >&2
 }
 
 
-# Activates a hard-coded conda enviornment 
+# Activates a hard-coded conda enviornment.
 activate_conda_env() {
+    local CONDA_ENV_NAME="interp-embed-py311"
     source /sw/external/python/anaconda3/etc/profile.d/conda.sh
-    conda activate interp-embed-py311
+    conda activate "$CONDA_ENV_NAME"
 }
 
+
+# Redirects caches for libaries like Hugging Face, Tranformers, etc. to a 
+# hard-coded scratch directory.
+redirect_caches() {
+    local SCRATCH_DIR="/scratch/bcqc/$USER"
+
+    # Create directory structure
+    mkdir -p \
+        "$SCRATCH_DIR/hf"/{hub,transformers,datasets,modules} \
+        "$SCRATCH_DIR/torch" \
+        "$SCRATCH_DIR/triton" \
+        "$SCRATCH_DIR/pip-cache" \
+        "$SCRATCH_DIR/conda/pkgs" \
+        "$SCRATCH_DIR/wandb/cache" \
+        "$SCRATCH_DIR/matplotlib" \
+        "$SCRATCH_DIR/.cache"
+
+    # Hugging Face
+    export HF_DIR="$SCRATCH_DIR/hf"
+    export HUGGINGFACE_HUB_CACHE="$HF_DIR/hub"
+    export HF_DATASETS_CACHE="$HF_DIR/datasets"
+    export HF_MODULES_CACHE="$HF_DIR/modules"
+
+    # PyTorch and Triton
+    export TORCH_HOME="$SCRATCH_DIR/torch"
+    export TRITON_CACHE_DIR="$SCRATCH_DIR/triton"
+
+    # Python and tooling
+    export PIP_CACHE_DIR="$SCRATCH_DIR/pip-cache"
+    export CONDA_PKGS_DIRS="$SCRATCH_DIR/conda/pkgs"
+    export MPLCONFIGDIR="$SCRATCH_DIR/matplotlib"
+
+    # WANDB
+    export WANDB_DIR="$SCRATCH_DIR/wandb"
+    export WANDB_CACHE_DIR="$SCRATCH_DIR/wandb/cache"
+
+    # Catch-all cache dir 
+    export XDG_CACHE_HOME="$SCRATCH_DIR/.cache"
+}
+
+
+# Sets environment variables for things like:
+# - Redirecting caches for various libraries to scratch.
+set_env_vars() {
+    redirect_caches
+}
 
 # Returns a "done" directory path for marking job completion and ensures the
 # directory exists using.
@@ -41,17 +88,17 @@ activate_conda_env() {
 # - `SLURM_JOB_NAME`: The name of the SLURM job.
 # - `SLURM_ARRAY_JOB_ID`: The array job ID, if applicable.
 get_done_dir() {
-    mkdir -p ./output/logs
-    local base_dir="./output/logs/${SLURM_JOB_NAME}/done"
+    mkdir -p "./output/logs"
+    local BASE_DIR="./output/logs/${SLURM_JOB_NAME}/done"
 
     if [[ -n "$SLURM_ARRAY_JOB_ID" ]]; then
-        done_dir="${base_dir}/${SLURM_ARRAY_JOB_ID}"
+        DONE_DIR="${BASE_DIR}/${SLURM_ARRAY_JOB_ID}"
     else
-        done_dir="$base_dir"
+        DONE_DIR="$BASE_DIR"
     fi
 
-    mkdir -p "$done_dir"
-    echo "$done_dir"
+    mkdir -p "$DONE_DIR"
+    echo "$DONE_DIR"
 }
 
 
@@ -72,19 +119,19 @@ get_done_dir() {
 # - `SLURM_JOB_NAME`: The name of the SLURM job (used to determine directory
 # path).
 get_done_file() {
-    local done_dir
-    done_dir=$(get_done_dir)
+    local DONE_DIR
+    DONE_DIR=$(get_done_dir)
 
-    local done_file
+    local DONE_FILE
     if [[ -n "$SLURM_ARRAY_JOB_ID" ]]; then
-        done_file="${SLURM_ARRAY_TASK_ID}.done"
+        DONE_FILE="${SLURM_ARRAY_TASK_ID}.done"
     else
-        done_file="${SLURM_JOB_ID}.done"
+        DONE_FILE="${SLURM_JOB_ID}.done"
     fi
 
-    local done_path="${done_dir}/${done_file}"
-    touch "$done_path"
-    echo "$done_path"
+    local DONE_PATH="${DONE_DIR}/${DONE_FILE}"
+    touch "$DONE_PATH"
+    echo "$DONE_PATH"
 }
 
 
@@ -106,13 +153,14 @@ get_done_file() {
 # Example output for a non-array job:
 #   "Job: train_test, ID: 123456"
 get_slurm_message() {
-    name="job: ${SLURM_JOB_NAME:-N/A}"
-    job_id="ID: ${SLURM_JOB_ID:-N/A}"
-    array_id="Array ID: ${SLURM_ARRAY_JOB_ID:-N/A}"
-    task_id="Task ID: ${SLURM_ARRAY_TASK_ID:-N/A}"
+    NAME="job: ${SLURM_JOB_NAME:-N/A}"
+    JOB_ID="ID: ${SLURM_JOB_ID:-N/A}"
+    ARRAY_ID="Array ID: ${SLURM_ARRAY_JOB_ID:-N/A}"
+    TASK_ID="Task ID: ${SLURM_ARRAY_TASK_ID:-N/A}"
+
     if [ -n "$SLURM_ARRAY_JOB_ID" ]; then
-        echo "${name}, ${job_id}, ${array_id}, ${task_id}"
+        echo "${NAME}, ${JOB_ID}, ${ARRAY_ID}, ${TASK_ID}"
     else
-        echo "${name}, ${job_id}"
+        echo "${NAME}, ${JOB_ID}"
     fi
 }

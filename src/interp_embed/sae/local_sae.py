@@ -43,7 +43,7 @@ class LocalSAE(BaseSAE):
     def name(self):
         cleaned_release = self.release.replace("/", "__")
         cleaned_sae_id = self.sae_id.replace("/", "__")
-        return f"{cleaned_release}_{cleaned_sae_id}"
+        return f"local__{cleaned_release}_{cleaned_sae_id}"
 
     def metadata(self):
         parent_metadata = super().metadata()
@@ -147,6 +147,11 @@ class GoodfireSAE(BaseSAE):
         self.activations = dict()
         self.activation_hook_handle = None
         self.config = get_goodfire_config(variant_name)
+        
+    @property
+    def name(self):
+        cleaned_variant_name = self.variant_name.replace("/", "__")
+        return f"goodfire__{cleaned_variant_name}"
 
     def metadata(self):
         parent_metadata = super().metadata()

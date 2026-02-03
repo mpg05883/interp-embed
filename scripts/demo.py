@@ -7,7 +7,7 @@ import pandas as pd
 
 from examples.functions import diff_features
 from src.interp_embed import Dataset
-from src.interp_embed.sae import LocalSAE
+from src.interp_embed.sae import LocalSAE, GoodfireSAE
 from src.utils.path import resolve_results_dirpath
 
 logging.basicConfig(
@@ -19,13 +19,19 @@ logging.basicConfig(
 
 
 def main(args: Namespace):
-    logging.info(f"Loading SAE: {args.sae_id=}, Release: {args.release=}")
+    logging.info("".join([f"{k}={v}\n" for k, v in vars(args).items()]))
 
-    # 1. Load a SAE supported through the SAELens package
-    sae = LocalSAE(
-        sae_id=args.sae_id,
-        release=args.release,
-    )
+    # 1. Load a Goodfire SAE or SAE supported through the SAELens package
+    goodfire = args.sae_type == "goodfire"
+    
+    kwargs = {
+        "variant_name": args.variant_name,
+    } if goodfire else {
+        "release": args.release,
+        "sae_id": args.sae_id,
+    }
+    
+    sae = GoodfireSAE(**kwargs) if goodfire else LocalSAE(**kwargs)
 
     # 2. Prepare your data as a DataFrame
     df1 = pd.DataFrame(
@@ -74,6 +80,17 @@ if __name__ == "__main__":
         "--sae_id",
         type=str,
         default="blocks.8.hook_resid_pre",
+    )
+    parser.add_argument(
+        "--variant_name",
+        type=str,
+        default="Llama-3.3-70B-Instruct-SAE-l50",
+    )
+    parser.add_argument(
+        "--sae_type",
+        type=str,
+        choices=["local", "goodfire"],
+        default="goodfire",
     )
     args = parser.parse_args()
     main(args)
