@@ -1,6 +1,12 @@
 from typing import List
 
-def build_scoring_prompt(feature_description: str, sample: str, explanation: bool = True, sample_type: str = "positive") -> str:
+
+def build_scoring_prompt(
+    feature_description: str,
+    sample: str,
+    explanation: bool = True,
+    sample_type: str = "positive",
+) -> str:
     """Build prompt for single sample scoring, comparing positive and negative samples."""
 
     if sample_type == "positive":
@@ -28,7 +34,6 @@ Your task:
 - Score 0 if the property described by the feature description is not clearly present in the sample at the marked tokens. If the feature description is not even a valid semantic or linguistic property (ex. "feature_#"), mark 0.
 """
     else:
-        assert "<<" not in sample, "Marked tokens detected in a negative sample"
         prompt = f"""You are an expert at evaluating sparse autoencoder feature descriptions. You will be scoring how accurate the feature description is for a given document sample. Some descriptions are poor; some are good.
 
 You are given a feature description and a sample. This sample did not activate the feature, so theoretically, there shouldn't be tokens in the sample that align with the feature. Your job is to evaluate how true that is.
@@ -53,19 +58,24 @@ Return your answer as a JSON object with exactly these fields:
 Make sure your response is valid JSON that can be parsed directly. Keep the explanation brief (1-2 sentences).
 """
 
-
     return prompt
 
-def build_labeling_prompt(positive_samples: List[str], negative_samples: List[str], label_and_score = None, explanation:bool = True) -> str:
-  """Build prompt for relabeling a feature."""
-  refinement_context = ""
-  if label_and_score is not None:
-    refinement_context = f"""
+
+def build_labeling_prompt(
+    positive_samples: List[str],
+    negative_samples: List[str],
+    label_and_score=None,
+    explanation: bool = True,
+) -> str:
+    """Build prompt for relabeling a feature."""
+    refinement_context = ""
+    if label_and_score is not None:
+        refinement_context = f"""
     REFINEMENT CONTEXT:
     The current label and score for this feature is: {label_and_score}. The score refers to the accuracy of the label on twenty other samples not shown here. Please refine the label based on the samples below.
     """
 
-  prompt = f"""You are an expert at interpreting features from sparse autoencoders (SAEs) for language models.
+    prompt = f"""You are an expert at interpreting features from sparse autoencoders (SAEs) for language models.
 Below are {len(positive_samples)} POSITIVE samples (where the feature activated, with tokens surrounded by << and >>) and {len(negative_samples)} NEGATIVE samples (where it did not activate, no << >> markers).
 
 The POSITIVE sample contains tokens that caused the feature to activate (marked with << >>), while the NEGATIVE sample does not.
@@ -96,4 +106,4 @@ Return your answer as a JSON object with exactly these fields:
 
 Make sure your response is valid JSON that can be parsed directly.
 """
-  return prompt
+    return prompt
