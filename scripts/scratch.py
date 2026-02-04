@@ -1,31 +1,54 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
+import argparse
+import logging
+
 import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
-tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.3-70B-Instruct")
-model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.3-70B-Instruct")
+from src.utils.path import resolve_model_snapshot
 
-# Check model device
-print(f"Model is on device: {model.device}")
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] %(message)s",
+    datefmt="%b %d, %Y %I:%M:%S%p",
+    force=True,
+)
 
-# Check if CUDA is available
-if torch.cuda.is_available():
-    print(f"CUDA device: {torch.cuda.get_device_name(model.device.index)}")
-else:
-    print("CUDA is not available.")
 
-messages = [
-    {"role": "user", "content": "Who are you?"},
-]
-inputs = tokenizer.apply_chat_template(
-    messages,
-    add_generation_prompt=True,
-    tokenize=True,
-    return_dict=True,
-    return_tensors="pt",
-).to(model.device)
+def main(args: argparse.Namespace):
+    snapshot = resolve_model_snapshot(args.model_name)
+    logging.info(f"{args.model_name=}, {snapshot=}")
 
-# Check inputs device
-print(f"Inputs are on device: {inputs['input_ids'].device}")
+    tokenizer = AutoTokenizer.from_pretrained(
+        snapshot,
+        local_files_only=True,
+    )
+    model = AutoModelForCausalLM.from_pretrained(
+        snapshot,
+        device_map="auto",
+        dtype=torch.bfloat16,
+        low_cpu_mem_usage=True,
+        local_files_only=True,
+    )
 
-outputs = model.generate(**inputs, max_new_tokens=40)
-print(tokenizer.decode(outputs[0][inputs["input_ids"].shape[-1]:]))
+    devices = sorted(
+        set(model.hf_device_map.values()),
+        key=str,
+    )
+
+    devices_str = ", ".join(
+        f"cuda:{d}" if isinstance(d, int) else str(d) for d in devices
+    )
+
+    # Check model device
+    logging.info(f"Model is on device: {devices_str}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--model_name",
+        type=str,
+        default="meta-llama/Llama-3.3-70B-Instruct",
+    )
+    args = parser.parse_args()
+    main(args)

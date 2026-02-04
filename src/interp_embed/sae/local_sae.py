@@ -135,8 +135,8 @@ class GoodfireSAE(BaseSAE):
     ):
         """
         Args:
-            variant_name: The name of the Goodfire SAE to use. NOTE: Goodfire 
-                only supports SAEs trained on Llama models. See here for a list 
+            variant_name: The name of the Goodfire SAE to use. NOTE: Goodfire
+                only supports SAEs trained on Llama models. See here for a list
                 of supported models: https://huggingface.co/goodfire/goodfire-sae-models
             quantize: Whether to quantize the language model.
             **kwargs: Additional arguments to pass to the base class.
@@ -147,7 +147,7 @@ class GoodfireSAE(BaseSAE):
         self.activations = dict()
         self.activation_hook_handle = None
         self.config = get_goodfire_config(variant_name)
-        
+
     @property
     def name(self):
         cleaned_variant_name = self.variant_name.replace("/", "__")
