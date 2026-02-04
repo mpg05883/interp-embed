@@ -6,7 +6,7 @@ from argparse import Namespace
 from datasets import load_dataset
 
 from src.utils.openai import compute_embeddings, load_openai_client
-from src.utils.path import build_embeddings_path
+from src.utils.path import build_embeddings_filepath
 
 logging.basicConfig(
     level=logging.INFO,
@@ -21,7 +21,7 @@ def main(args: Namespace):
     dataset = load_dataset(args.dataset, "main", split=args.split)
     df = dataset.to_pandas()
 
-    output_path = build_embeddings_path(
+    output_path = build_embeddings_filepath(
         dataset=args.dataset,
         split=args.split,
         field=args.field,

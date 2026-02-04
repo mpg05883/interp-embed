@@ -1,13 +1,14 @@
 import argparse
+import json
 import logging
 from argparse import Namespace
 
-import pandas as pd
-from examples.functions import diff_features
+from datasets import load_dataset
 
 from src.interp_embed import Dataset
+from src.interp_embed.paper.clustering.algorithms import compute_clusters
 from src.interp_embed.sae import GoodfireSAE, LocalSAE
-from src.utils.path import resolve_results_dirpath
+from src.utils.path import build_experiment_results_filepath
 
 logging.basicConfig(
     level=logging.INFO,
@@ -20,7 +21,6 @@ logging.basicConfig(
 def main(args: Namespace):
     logging.info("".join([f"{k}={v}\n" for k, v in vars(args).items()]))
 
-    # 1. Load a Goodfire SAE or SAE supported through the SAELens package
     goodfire = args.sae_type == "goodfire"
 
     kwargs = (
@@ -34,42 +34,27 @@ def main(args: Namespace):
         }
     )
 
-    sae = GoodfireSAE(**kwargs) if goodfire else LocalSAE(**kwargs)
+    SAEClass = GoodfireSAE if goodfire else LocalSAE
 
-    # 2. Prepare your data as a DataFrame
-    df1 = pd.DataFrame(
-        {
-            "text": ["Good morning!", "Hello there!", "Good afternoon."],
-            "date": ["2022-01-10", "2021-08-23", "2023-03-14"],  # Metadata column
-        }
+    sae = SAEClass(**kwargs)
+    df = load_dataset(args.dataset, "main", split=args.split).to_pandas()
+    dataset = Dataset(data=df, sae=sae, field="answer")
+
+    clusters = compute_clusters(dataset, args.n_clusters)
+
+    output_path = build_experiment_results_filepath(
+        experiment="clustering",
+        dataset=args.dataset,
+        split=args.split,
+        field="answer",
+        model=sae.name,
+        extension="json",
     )
 
-    # 2. Prepare your data as a DataFrame
-    df2 = pd.DataFrame(
-        {
-            "text": ["See you later!", "Goodbye!", "Goodbye."],
-            "date": ["2022-01-10", "2021-08-23", "2023-03-14"],  # Metadata column
-        }
-    )
+    with open(output_path, "w") as f:
+        json.dump(clusters, f)
 
-    # 3. Create dataset - computes and saves feature activations
-    dataset1 = Dataset(
-        data=df1,
-        sae=sae,
-    )
-
-    dataset2 = Dataset(
-        data=df2,
-        sae=sae,
-    )
-
-    freq = diff_features(dataset1, dataset2)
-    print(freq.head())
-
-    out_path = resolve_results_dirpath() / "demo" / f"{sae.name}.csv"
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    freq.to_csv(out_path, index=False)
-    logging.info(f"Results saved to {out_path}")
+    logging.info(f"Clusters saved to {output_path}")
 
 
 if __name__ == "__main__":
@@ -94,6 +79,31 @@ if __name__ == "__main__":
         type=str,
         choices=["local", "goodfire"],
         default="goodfire",
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="gsm8k",
+    )
+    parser.add_argument(
+        "--split",
+        type=str,
+        default="test",
+    )
+    parser.add_argument(
+        "--field",
+        type=str,
+        default="answer",
+    )
+    parser.add_argument(
+        "--n_clusters",
+        type=int,
+        default=8,
+    )
+    parser.add_argument(
+        "--top_n",
+        type=int,
+        default=5,
     )
     args = parser.parse_args()
     main(args)

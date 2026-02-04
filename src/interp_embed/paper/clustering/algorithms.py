@@ -31,10 +31,12 @@ def compute_clusters(
             }
         }
     """
-    activations = dataset.latents() # (n_documents, n_features)
+    activations = dataset.latents()  # (n_documents, n_features)
     feature_labels = dataset.feature_labels()
 
-    filtered = activations[:, active_features] if active_features is not None else activations
+    filtered = (
+        activations[:, active_features] if active_features is not None else activations
+    )
 
     # --- Jaccard affinity ---
     bin_csr = csr_matrix(filtered > 0, dtype=np.int32)
