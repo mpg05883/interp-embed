@@ -191,6 +191,7 @@ class GoodfireSAE(BaseSAE):
 
         self.model = AutoModelForCausalLM.from_pretrained(
             config["hf_model"],
+            # cache_dir="/scratch/bcqc/mgee2/hf",
             quantization_config=bnb_config if self.quantize else None,
             device_map=self.model_device,
         )
@@ -230,9 +231,9 @@ class GoodfireSAE(BaseSAE):
 
         with torch.no_grad():
             outputs = self.model(
-                input_ids=torch.tensor(inputs["input_ids"]).to(self.model.device),
+                input_ids=torch.tensor(inputs["input_ids"]).to(self.model_device),
                 attention_mask=torch.tensor(inputs["attention_mask"]).to(
-                    self.model.device
+                    self.model_device
                 ),
             )
 
