@@ -58,3 +58,17 @@ def build_embeddings_filepath(
     )
     filepath.parent.mkdir(parents=True, exist_ok=True)
     return filepath
+
+
+def resolve_model_snapshot(
+    model_name: str = "meta-llama/Llama-3.3-70B-Instruct",
+) -> Path:
+    hf_dirpath = Path("/scratch/bcqc/mgee2/hf/hub/")
+
+    # Default to Meta Llama-3.3-70B-Instruct if no model name is provided
+    default_model_dir = "models--meta-llama--Llama-3.3-70B-Instruct"
+
+    return {
+        "meta-llama/Llama-3.3-70B-Instruct": hf_dirpath
+        / "models--meta-llama--Llama-3.3-70B-Instruct/snapshots/6f6073b423013f6a7d4d9f39144961bfbfbc386b",
+    }.get(model_name, hf_dirpath / default_model_dir)

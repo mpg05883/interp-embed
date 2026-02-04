@@ -12,6 +12,8 @@ from transformers import (
     BitsAndBytesConfig,
 )
 
+from src.utils.path import resolve_model_snapshot
+
 from .base_sae import BaseSAE, SAEType
 from .utils import (
     ensure_loaded,
@@ -179,7 +181,8 @@ class GoodfireSAE(BaseSAE):
     def load_models(self):
         # Load the model, sae, and tokenizer
         bnb_config = BitsAndBytesConfig(
-            load_in_8bit=True, bnb_8bit_compute_dtype=torch.float32
+            load_in_8bit=True,
+            bnb_8bit_compute_dtype=torch.float32,
         )
 
         if self.quantize:
@@ -188,12 +191,16 @@ class GoodfireSAE(BaseSAE):
             )
 
         config = get_goodfire_config(self.variant_name)
+        snapshot = resolve_model_snapshot(config["hf_model"])
 
         self.model = AutoModelForCausalLM.from_pretrained(
-            config["hf_model"],
-            # cache_dir="/scratch/bcqc/mgee2/hf",
+            snapshot,
+            local_files_only=True,
+            dtype=torch.bfloat16,
+            low_cpu_mem_usage=True,
             quantization_config=bnb_config if self.quantize else None,
             device_map=self.model_device,
+            use_safetensors=True,
         )
 
         # Add hooks to the model
@@ -215,7 +222,11 @@ class GoodfireSAE(BaseSAE):
         ].register_forward_hook(activation_hook)
         torch.cuda.empty_cache()
 
-        self.tokenizer = AutoTokenizer.from_pretrained(config["hf_model"])
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            snapshot,
+            local_files_only=True,
+            use_fast=True,
+        )
         self.sae = SAEModel.from_pretrained(
             release=config["goodfire_release"],
             sae_id=config["sae_id"],
