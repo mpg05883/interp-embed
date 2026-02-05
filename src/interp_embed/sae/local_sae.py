@@ -1,7 +1,7 @@
 import re
 import warnings
 from functools import partial
-
+import time
 import numpy as np
 import torch
 from sae_lens import SAE as SAEModel
@@ -79,6 +79,10 @@ class LocalSAE(BaseSAE):
     def encode(self, texts):
         assert len(texts) > 0, "There must be more t.han one text to encode."
         self.sae.eval()  # prevents error if we're expecting a dead neuron mask for who grads
+        
+        print(f"self.model exists: {self.model is not None}")
+        print(f"self.sae exists: {hasattr(self, 'sae') and self.sae is not None}")
+        print(f"self.tokenizer exists: {self.tokenizer is not None}")
 
         # # Filter out texts that exceed the context window
         # max_length = self.tokenizer.model_max_length or CONTEXT_WINDOW_LIMIT
@@ -131,7 +135,7 @@ class LocalSAE(BaseSAE):
 class GoodfireSAE(BaseSAE):
     def __init__(
         self,
-        variant_name: str = "Llama-3.1-8B-Instruct-SAE-l19",
+        variant_name: str = "Llama-3.3-70B-Instruct-SAE-l50",
         quantize=False,
         **kwargs,
     ):
@@ -192,16 +196,27 @@ class GoodfireSAE(BaseSAE):
 
         config = get_goodfire_config(self.variant_name)
         snapshot = resolve_model_snapshot(config["hf_model"])
-
+        
+        print(
+            f"CUDA available: {torch.cuda.is_available()}, "
+            f"GPU count: {torch.cuda.device_count()}"
+        )
+        for i in range(torch.cuda.device_count()):
+            print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
+        
+        start = time.time()
         self.model = AutoModelForCausalLM.from_pretrained(
             snapshot,
             local_files_only=True,
-            dtype=torch.bfloat16,
+            dtype=torch.bfloat16,  
             low_cpu_mem_usage=True,
             quantization_config=bnb_config if self.quantize else None,
             device_map=self.model_device,
             use_safetensors=True,
+            # max_memory={0: "38GB", 1: "38GB", 2: "38GB", 3: "38GB"},
         )
+        print(f"Model loaded in {time.time() - start:.1f}s")
+        print(f"model map: {set(self.model.hf_device_map.values())}")
 
         # Add hooks to the model
         self.activations = {}
@@ -227,25 +242,38 @@ class GoodfireSAE(BaseSAE):
             local_files_only=True,
             use_fast=True,
         )
+        
+        # NOTE: Use hard-coded release and sae_id from here:
+        # https://decoderesearch.github.io/SAELens/latest/pretrained_saes/meta-llama_llama-3.3-70b-instruct/
+        
+        start = time.time()
         self.sae = SAEModel.from_pretrained(
-            release=config["goodfire_release"],
-            sae_id=config["sae_id"],
+            release="goodfire-llama-3.3-70b-instruct",
+            sae_id="layer_50",
             device=self.sae_device,
             converter=goodfire_sae_loader,
         )
+        print(f"SAE loaded in {time.time() - start:.1f}s")
 
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
     @ensure_loaded
     def encode(self, texts):
+        input_device = next(self.model.parameters()).device
+        print(f"Model device: {input_device}")
+        print(f"SAE device: {self.sae_device}")
+        print("Starting encode()...")
+            
+        print(f"self.model exists: {self.model is not None}")
+        print(f"self.sae exists: {hasattr(self, 'sae') and self.sae is not None}")
+        print(f"self.tokenizer exists: {self.tokenizer is not None}")
+        
         inputs = self.tokenize(texts, padding=True, as_tokens=False)
 
         with torch.no_grad():
             outputs = self.model(
-                input_ids=torch.tensor(inputs["input_ids"]).to(self.model_device),
-                attention_mask=torch.tensor(inputs["attention_mask"]).to(
-                    self.model_device
-                ),
+                input_ids=torch.tensor(inputs["input_ids"]).to(input_device),
+                attention_mask=torch.tensor(inputs["attention_mask"]).to(input_device),
             )
 
             feature_acts = self.sae.encode(
@@ -262,7 +290,7 @@ class GoodfireSAE(BaseSAE):
         return [
             csr_matrix(feature_acts_np[i][attn_mask[i]])
             for i in range(feature_acts_np.shape[0])
-        ]
+    ]
 
     def destroy_models(self):
         self.activations = dict()

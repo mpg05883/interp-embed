@@ -10,8 +10,7 @@ class BaseSAE(ABC):
     self.truncate = truncate
     self._feature_labels = dict()
     self.use_assistant_role = use_assistant_role
-    self.model_device = "auto"
-    _, self.sae_device = process_device_config(device)
+    self.model_device, self.sae_device = process_device_config(device)
 
   @classmethod
   def from_metadata(cls, metadata):

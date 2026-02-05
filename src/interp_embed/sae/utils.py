@@ -73,10 +73,12 @@ def get_goodfire_config_from_hf(
         if use_8b_model
         else "meta-llama/Llama-3.3-70B-Instruct"
     )
+    
+    d_in = 4096 if use_8b_model else 8192  # 8B: 4096, 70B: 8192
 
     return {
         "architecture": "standard",
-        "d_in": 4096,  # LLaMA 8B hidden size
+        "d_in": d_in,  
         "d_sae": get_goodfire_d_sae(
             model_name
         ),  # Expansion factor 16 for 8B model, 8 for 70B model

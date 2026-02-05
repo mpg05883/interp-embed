@@ -3,7 +3,7 @@ import logging
 from argparse import Namespace
 
 import pandas as pd
-from examples.functions import diff_features
+from notebooks.functions import diff_features
 
 from src.interp_embed import Dataset
 from src.interp_embed.sae import GoodfireSAE, LocalSAE
@@ -26,6 +26,7 @@ def main(args: Namespace):
     kwargs = (
         {
             "variant_name": args.variant_name,
+            "device": {"model": "auto", "sae": "cuda:0"},
         }
         if goodfire
         else {
@@ -34,7 +35,9 @@ def main(args: Namespace):
         }
     )
 
-    sae = GoodfireSAE(**kwargs) if goodfire else LocalSAE(**kwargs)
+    SAEClass = GoodfireSAE if goodfire else LocalSAE
+
+    sae = SAEClass(**kwargs)
 
     # 2. Prepare your data as a DataFrame
     df1 = pd.DataFrame(
