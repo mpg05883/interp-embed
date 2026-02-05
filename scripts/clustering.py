@@ -8,7 +8,7 @@ from datasets import load_dataset
 from src.interp_embed import Dataset
 from src.interp_embed.paper.clustering.algorithms import compute_clusters
 from src.interp_embed.sae import GoodfireSAE, LocalSAE
-from src.utils.path import build_experiment_results_filepath
+from src.utils.path import build_experiment_results_filepath, build_dataset_filepath
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,6 +26,7 @@ def main(args: Namespace):
     kwargs = (
         {
             "variant_name": args.variant_name,
+            "device": {"model": "auto", "sae": "cpu"},
         }
         if goodfire
         else {
@@ -38,11 +39,25 @@ def main(args: Namespace):
 
     sae = SAEClass(**kwargs)
     df = load_dataset(args.dataset, "main", split=args.split).to_pandas()
-    dataset = Dataset(data=df, sae=sae, field="answer")
+    
+    dataset_path = build_dataset_filepath(
+        dataset=args.dataset,
+        split=args.split,
+        field=args.field,
+        model=sae.name,
+    )
+    
+    if dataset_path.exists():
+        logging.info(f"Loading existing dataset from {dataset_path}")
+        dataset = Dataset.load_from_file(dataset_path)
+    else:
+        dataset = Dataset(data=df, sae=sae, field="answer")
+        datset.save_to_file(dataset_path)
+        logging.info(f"Saved embeddings for {len(df)} texts to {dataset_path}")
 
     clusters = compute_clusters(dataset, args.n_clusters)
 
-    output_path = build_experiment_results_filepath(
+    dataset_path = build_experiment_results_filepath(
         experiment="clustering",
         dataset=args.dataset,
         split=args.split,
@@ -51,10 +66,10 @@ def main(args: Namespace):
         extension="json",
     )
 
-    with open(output_path, "w") as f:
+    with open(dataset_path, "w") as f:
         json.dump(clusters, f)
 
-    logging.info(f"Clusters saved to {output_path}")
+    logging.info(f"Clusters saved to {dataset_path}")
 
 
 if __name__ == "__main__":

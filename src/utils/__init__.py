@@ -4,8 +4,8 @@ from .openai import (
 )
 
 from .path import (
-    resolve_embeddings_dirpath,
+    resolve_datasets_dirpath,
     resolve_model_snapshot,
     resolve_results_dirpath,
-    build_embeddings_filepath,
+    build_dataset_filepath,
 )

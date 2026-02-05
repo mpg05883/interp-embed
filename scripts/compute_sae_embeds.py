@@ -7,7 +7,7 @@ from datasets import load_dataset
 from src.interp_embed.dataset_analysis import Dataset
 from src.interp_embed.sae.local_sae import LocalSAE
 from src.interp_embed.utils.helpers import safe_load_pkl
-from src.utils.path import build_embeddings_filepath
+from src.utils.path import build_dataset_filepath
 
 logging.basicConfig(
     level=logging.INFO,
@@ -21,7 +21,7 @@ def main(args: Namespace):
     df = load_dataset(args.dataset, "main", split=args.split).to_pandas()
     sae = LocalSAE(sae_id=args.sae_id, release=args.release)
 
-    output_path = build_embeddings_filepath(
+    output_path = build_dataset_filepath(
         dataset=args.dataset,
         split=args.split,
         field=args.field,

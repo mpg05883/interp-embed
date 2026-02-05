@@ -33,28 +33,28 @@ def build_experiment_results_filepath(
     return filepath
 
 
-def resolve_embeddings_dirpath(dataset: str) -> Path:
-    """Resolve the path to results/embeddings/{dataset}, directory and create
+def resolve_datasets_dirpath(dataset: str) -> Path:
+    """Resolve the path to results/datasets/{dataset}, directory and create
     it if it doesn't exist."""
-    dirpath = resolve_results_dirpath() / "embeddings" / dataset
+    dirpath = resolve_results_dirpath() / "datasets" / dataset
     dirpath.mkdir(parents=True, exist_ok=True)
     return dirpath
 
 
-def build_embeddings_filepath(
+def build_dataset_filepath(
     dataset: str,
     split: str,
     field: str,
     model: str,
     extension: str = "pkl",
 ) -> Path:
-    """Build the path to the embeddings file for a given dataset, split, field,
+    """Build the path to the datasets file for a given dataset, split, field,
     model, and extension formatted as:
 
-    results/embeddings/{dataset}/{split}/{field}/{model}.{extension}
+    results/datasets/{dataset}/{split}/{field}/{model}.{extension}
     """
     filepath = (
-        resolve_embeddings_dirpath(dataset) / split / field / f"{model}.{extension}"
+        resolve_datasets_dirpath(dataset) / split / field / f"{model}.{extension}"
     )
     filepath.parent.mkdir(parents=True, exist_ok=True)
     return filepath
@@ -72,3 +72,4 @@ def resolve_model_snapshot(
         "meta-llama/Llama-3.3-70B-Instruct": hf_dirpath
         / "models--meta-llama--Llama-3.3-70B-Instruct/snapshots/6f6073b423013f6a7d4d9f39144961bfbfbc386b",
     }.get(model_name, hf_dirpath / default_model_dir)
+    
