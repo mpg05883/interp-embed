@@ -51,8 +51,8 @@ def main(args: Namespace):
         logging.info(f"Loading existing dataset from {dataset_path}")
         dataset = Dataset.load_from_file(dataset_path)
     else:
-        dataset = Dataset(data=df, sae=sae, field="answer")
-        datset.save_to_file(dataset_path)
+        dataset = Dataset(data=df, sae=sae, field="answer", save_path=dataset_path)
+        dataset.save_to_file(dataset_path)
         logging.info(f"Saved embeddings for {len(df)} texts to {dataset_path}")
 
     clusters = compute_clusters(dataset, args.n_clusters)

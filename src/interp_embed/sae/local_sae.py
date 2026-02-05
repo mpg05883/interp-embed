@@ -260,8 +260,8 @@ class GoodfireSAE(BaseSAE):
     @ensure_loaded
     def encode(self, texts):
         input_device = next(self.model.parameters()).device
-        print(f"Model device: {input_device}, SAE device: {self.sae_device}")
-        print("Starting encode()...")
+        # print(f"Model device: {input_device}, SAE device: {self.sae_device}")
+        # print("Starting encode()...")
             
         inputs = self.tokenize(texts, padding=True, as_tokens=False)
 
