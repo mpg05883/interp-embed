@@ -260,14 +260,9 @@ class GoodfireSAE(BaseSAE):
     @ensure_loaded
     def encode(self, texts):
         input_device = next(self.model.parameters()).device
-        print(f"Model device: {input_device}")
-        print(f"SAE device: {self.sae_device}")
+        print(f"Model device: {input_device}, SAE device: {self.sae_device}")
         print("Starting encode()...")
             
-        print(f"self.model exists: {self.model is not None}")
-        print(f"self.sae exists: {hasattr(self, 'sae') and self.sae is not None}")
-        print(f"self.tokenizer exists: {self.tokenizer is not None}")
-        
         inputs = self.tokenize(texts, padding=True, as_tokens=False)
 
         with torch.no_grad():

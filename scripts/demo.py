@@ -26,7 +26,7 @@ def main(args: Namespace):
     kwargs = (
         {
             "variant_name": args.variant_name,
-            "device": {"model": "auto", "sae": "cuda:0"},
+            "device": {"model": "auto", "sae": "cpu"},
         }
         if goodfire
         else {
